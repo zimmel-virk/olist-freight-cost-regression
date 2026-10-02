@@ -1,52 +1,34 @@
 # Olist Freight Cost Regression — Data Cleaning, Feature Engineering & Ridge
 
-A data-science project that predicts **item-level freight cost in Brazilian e-commerce** using the public Olist marketplace dataset.
+A data-science project that predicts **item-level freight cost in Brazilian e-commerce** using the Brazilian E-Commerce Public Dataset by Olist.
 
-This repository showcases a complete analytical workflow rather than only model fitting: **nine relational CSV files are audited, cleaned, validated, merged and transformed into a leakage-safe modelling dataset** before multiple regression models are compared.
+The project develops a complete analytical workflow across nine related CSV files. The data is audited, cleaned, sanitised, validated and merged into an analysis-ready order-item dataset before regression models are trained, evaluated and compared.
 
-## Why this project is portfolio-relevant
+## Project Objective
 
-The strongest part of this project is the data work. It demonstrates practical experience with:
-
-- multi-file relational data integration;
-- dataset-level and column-level quality audits;
-- candidate-key and foreign-key integrity checks;
-- one-to-many / many-to-many relationship analysis;
-- duplicate detection and treatment;
-- missing-value analysis;
-- string, numeric and datetime sanitisation;
-- geolocation validation and aggregation;
-- leakage prevention;
-- group-aware train/test splitting and cross-validation;
-- training-only imputation and preprocessing;
-- outlier, influence and heteroscedasticity diagnostics;
-- domain-informed feature engineering;
-- regularised regression;
-- order-level bootstrap uncertainty analysis.
-
-## Problem
-
-The target is:
+The target variable is:
 
 ```text
 freight_value
 ```
 
-The objective is to estimate the freight charge for an individual order item from information available at or near purchase time, including:
+The objective is to estimate the freight charge for an individual product item using information available at or close to purchase time, including:
 
-- product price;
-- product weight and dimensions;
-- seller-to-customer distance;
-- product category;
-- customer and seller region;
-- purchase timing;
-- order-level context.
+- product price
+- product weight and dimensions
+- seller-to-customer distance
+- product category
+- customer and seller state
+- purchase timing
+- order-level characteristics
+
+The project also investigates which factors have the strongest relationship with freight cost and whether domain-informed feature engineering and regularisation improve predictive performance.
 
 ## Dataset
 
-**Brazilian E-Commerce Public Dataset by Olist**
+The project uses the **Brazilian E-Commerce Public Dataset by Olist**.
 
-The coursework uses nine related CSV files:
+The source data is distributed across nine related CSV files:
 
 ```text
 olist_customers_dataset.csv
@@ -60,7 +42,7 @@ olist_sellers_dataset.csv
 product_category_name_translation.csv
 ```
 
-The source dataset contains roughly 100,000 orders and more than 100,000 order-item observations. The coursework records:
+The recorded source-table sizes are:
 
 | Table | Rows |
 |---|---:|
@@ -74,101 +56,148 @@ The source dataset contains roughly 100,000 orders and more than 100,000 order-i
 | Geolocation | 1,000,163 |
 | Category translations | 71 |
 
-The final modelling workflow uses a reproducible **9,000-row order-item sample** for coursework efficiency.
+The source is relational rather than a single analysis-ready table, so a major part of the project focuses on controlled data preparation, relational integrity and preprocessing.
 
-## Data-quality and preprocessing workflow
+The final modelling workflow uses a reproducible **9,000-row order-item sample** for statistical and machine-learning analysis.
 
-### 1. Preserve raw data
+## Data Preparation and Cleaning
 
-Raw DataFrames are left unchanged while separate cleaned working copies are created.
+### Raw-data preservation
 
-### 2. Audit every source table
+The raw DataFrames are kept unchanged while cleaned working copies are created for subsequent analysis.
 
-The notebook records:
+### Dataset-level quality auditing
 
-- row/column counts;
-- duplicate rows;
-- missing cells and percentages;
-- memory usage;
-- data types;
-- column cardinality.
+Each source table is inspected for:
 
-### 3. Validate relational integrity
+- row and column counts
+- duplicate rows
+- missing values
+- missing-value percentages
+- memory usage
+- data types
+- column cardinality
 
-Candidate keys and foreign keys are audited before merging. Relationship multiplicity is inspected so that direct joins do not accidentally multiply observations.
+### Relational-integrity analysis
 
-This is particularly important because an order may have multiple:
+Candidate keys and foreign keys are checked before tables are merged.
 
-- order items;
-- payment transactions;
-- review records.
+Relationship multiplicity is also analysed because an order may contain multiple:
+
+- order items
+- payment transactions
+- review records
 
 The analytical unit is intentionally defined as **one order item**.
 
-### 4. Sanitise values
+This prevents uncontrolled many-to-many joins from artificially multiplying observations.
 
-The project performs:
+### Data sanitisation
 
-- whitespace stripping;
-- empty-string-to-missing conversion;
-- standardisation of Brazilian state codes;
-- category-name normalisation;
-- explicit datetime parsing;
-- numeric conversion with failure auditing;
-- duplicate treatment;
-- physical plausibility checks.
+The cleaning workflow includes:
 
-### 5. Clean geolocation data
+- whitespace stripping
+- empty-string handling
+- Brazilian state-code standardisation
+- category-name normalisation
+- explicit datetime parsing
+- numeric conversion
+- conversion-failure auditing
+- duplicate treatment
+- missing-value analysis
+- physical plausibility checks
 
-The geolocation table contains repeated coordinates for ZIP-code prefixes. Coordinates are validated and aggregated before joining, preventing a large many-to-many expansion.
+### Geolocation processing
 
-### 6. Controlled relational merges
+The geolocation dataset contains repeated coordinate records for ZIP-code prefixes.
 
-The workflow builds an order-item analytical table using audited many-to-one joins across orders, customers, sellers, products and cleaned geographical data.
+Coordinates are validated and aggregated before joining to avoid many-to-many expansion.
 
-### 7. Geographical feature engineering
+Seller-to-customer geographical distance is then calculated using the **Haversine formula**.
 
-Seller-to-customer straight-line distance is calculated using the **Haversine formula**.
+### Controlled relational merging
 
-### 8. Leakage-safe model preprocessing
+The analytical dataset is constructed through audited joins across:
 
-Model-specific transformations are learned only from training observations:
+- orders
+- order items
+- customers
+- sellers
+- products
+- cleaned geographical data
 
-- numerical median imputation;
-- scaling;
-- categorical imputation;
-- one-hot encoding;
-- rare-category handling;
-- Ridge regularisation.
+Payment, review and post-delivery information are excluded from predictive features where they could introduce target leakage or use information unavailable when freight cost is estimated.
 
-Related items from the same order are kept together through **group-aware splitting**.
+## Exploratory and Statistical Analysis
 
-## Statistical and diagnostic analysis
+The project performs extensive statistical analysis before modelling, including:
 
-The project goes beyond a standard regression notebook and includes:
+- measures of central tendency
+- measures of spread
+- distribution analysis
+- skewness
+- excess kurtosis
+- IQR-based outlier analysis
+- modified-z diagnostics
+- Pearson correlation
+- Spearman correlation
+- categorical-cardinality analysis
+- Q-Q analysis
 
-- central tendency and spread;
-- skewness and excess kurtosis;
-- IQR and modified-z outlier diagnostics;
-- Pearson and Spearman correlations;
-- Q-Q analysis;
-- residual-vs-fitted analysis;
-- actual-vs-predicted calibration;
-- Breusch-Pagan heteroscedasticity testing;
-- VIF multicollinearity analysis;
-- leverage;
-- Cook's distance;
-- studentised residuals.
+The 9,000-row analytical sample contains a strongly right-skewed freight-cost distribution.
 
-The sampled target distribution is strongly right-skewed. In the coursework's 9,000-row analytical sample, mean freight is about **19.70 BRL**, median freight about **16.25 BRL**, and skewness about **4.96**.
+Recorded target statistics include:
 
-## Models
+```text
+Mean freight value:       19.70 BRL
+Median freight value:     16.25 BRL
+95th percentile:          44.02 BRL
+99th percentile:          82.583 BRL
+Maximum freight value:   306.06 BRL
+Skewness:                  4.958
+Excess kurtosis:          44.644
+```
 
-Three main regression approaches are compared.
+## Leakage-Safe Preprocessing
 
-### Baseline multiple linear regression
+Model preprocessing is learned from training observations rather than from the complete dataset.
 
-Reference test performance:
+The workflow includes:
+
+- numerical median imputation
+- feature scaling
+- categorical imputation
+- one-hot encoding
+- rare-category handling
+- group-aware train/test splitting
+- group-aware cross-validation
+
+Items belonging to the same order are kept within the same split so related observations do not leak between training and evaluation data.
+
+## Feature Engineering
+
+Domain-informed variables are introduced to represent physical and geographical factors affecting freight cost.
+
+Examples include:
+
+- parcel volume
+- parcel density
+- seller-to-customer distance
+- price-to-weight relationships
+- logarithmic transformations
+- squared distance
+- squared volume
+- weight × distance interactions
+- volume × distance interactions
+- same-state delivery context
+
+## Regression Models
+
+Three main regression approaches are evaluated.
+
+### Baseline Multiple Linear Regression
+
+Reported test performance:
 
 ```text
 RMSE: 11.492 BRL
@@ -176,20 +205,9 @@ MAE:   5.166 BRL
 R²:    0.562
 ```
 
-### Feature-engineered ordinary least squares
+### Feature-Engineered Ordinary Least Squares
 
-Feature engineering adds domain-informed non-linear and interaction terms such as:
-
-- parcel volume;
-- parcel density;
-- price-to-weight relationships;
-- logarithmic transformations;
-- squared distance;
-- squared volume;
-- weight × distance;
-- volume × distance.
-
-Reference test performance:
+Reported test performance:
 
 ```text
 RMSE: 10.601 BRL
@@ -197,9 +215,9 @@ MAE:   4.755 BRL
 R²:    0.627
 ```
 
-### Tuned Ridge regression
+### Tuned Ridge Regression
 
-Reference test performance:
+Reported test performance:
 
 ```text
 RMSE: 10.629 BRL
@@ -207,45 +225,75 @@ MAE:   4.740 BRL
 R²:    0.625
 ```
 
-Although engineered OLS has a slightly lower single-split RMSE, the coursework selects **Ridge** as the preferred model because it has lower MAE, lower median absolute error, stronger group-aware cross-validation behaviour and greater coefficient stability under correlated engineered features.
+The feature-engineered OLS model achieves the lowest single-split RMSE, while the tuned Ridge model achieves the lowest MAE and provides greater coefficient stability when correlated engineered features are present.
 
-Relative to the baseline, Ridge reduces:
+The project selects **Ridge regression** as the preferred final model after considering:
 
-- RMSE by approximately **7.5%**
-- MAE by approximately **8.3%**
+- test error
+- median absolute error
+- group-aware cross-validation
+- regularisation
+- coefficient stability
 
-## What the model learned
+Relative to the baseline model, Ridge reduces:
 
-The strongest predictor groups are associated with:
+```text
+RMSE by approximately 7.5%
+MAE  by approximately 8.3%
+```
 
-- parcel volume;
-- product weight;
-- geographical distance;
-- interactions between weight/volume and distance;
-- same-state delivery context.
+## Regression Diagnostics
 
-The project treats coefficients as associative rather than causal.
+The modelling stage includes detailed statistical diagnostics rather than relying only on predictive scores.
 
-## Robustness analysis
+The analysis includes:
 
-The final evaluation uses **order-level bootstrap resampling** rather than ordinary row-level bootstrap, preserving dependence between items belonging to the same order.
+- residual-vs-fitted behaviour
+- actual-vs-predicted calibration
+- Breusch-Pagan heteroscedasticity testing
+- variance inflation factors
+- leverage
+- Cook's distance
+- studentised residuals
+- influential-observation analysis
 
-The coursework reports that Ridge reduced RMSE versus the baseline in **96.4% of order-level bootstrap samples** and reduced MAE in every bootstrap sample.
+## Robustness Analysis
 
-Performance is weaker for high-cost shipments; the highest freight quartile has a reported RMSE of **19.447 BRL**, so the model is positioned as decision support for quotation and budgeting rather than fully automated pricing.
+Final-model uncertainty is evaluated using **order-level bootstrap resampling**.
 
-## Repository structure
+Resampling by order preserves dependence between multiple items belonging to the same order.
+
+The reported analysis found that Ridge reduced RMSE relative to the baseline in **96.4% of order-level bootstrap samples** and reduced MAE in every bootstrap sample.
+
+Performance is weaker for unusually expensive deliveries.
+
+The highest freight-cost quartile has a reported:
+
+```text
+RMSE: 19.447 BRL
+```
+
+The model is therefore interpreted as a freight-cost estimation and planning tool rather than a fully automated pricing system.
+
+## Main Findings
+
+The analysis indicates that freight cost is strongly associated with combinations of:
+
+- parcel volume
+- product weight
+- geographical distance
+- interactions between physical parcel characteristics and distance
+- regional delivery context
+
+The regression coefficients are interpreted as statistical associations rather than causal effects.
+
+## Repository Structure
 
 ```text
 olist-freight-cost-regression/
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
-├── notebooks/
-│   └── olist_freight_cost_regression.ipynb
-├── src/
-│   ├── __init__.py
-│   └── freight_utils.py
 ├── data/
 │   ├── raw/
 │   │   └── README.md
@@ -257,55 +305,52 @@ olist-freight-cost-regression/
 ├── figures/
 └── docs/
     ├── original_coursework_report.pdf
-    ├── original_notebook_export.html
-    └── PORTFOLIO_NOTES.md
+    └── original_notebook_export.html
 ```
 
-## Setup
+## Original Project Files
 
-Python 3.11 is recommended.
+The original supplied project artefacts are retained without rewriting the implementation:
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
+- `docs/original_notebook_export.html` — original Jupyter Notebook HTML export containing the project code, narrative and outputs
+- `docs/original_coursework_report.pdf` — original PDF export of the completed project
 
-Place the nine Olist CSV files in:
+## Dataset Setup
+
+The raw Olist CSV files are not included in the repository.
+
+The file:
 
 ```text
-data/raw/
+data/raw/README.md
 ```
 
-Then open:
+lists the exact dataset filenames used by the project.
 
-```text
-notebooks/olist_freight_cost_regression.ipynb
-```
+## Main Technologies
 
-and run the notebook from the repository root.
+- Python
+- pandas
+- NumPy
+- SciPy
+- Matplotlib
+- scikit-learn
+- statsmodels
+- Jupyter Notebook
 
-## Data policy
+## Techniques Used
 
-The raw Olist CSV files are intentionally **not committed** to this repository. They are third-party dataset files and are substantially larger than the source code.
+**Data preparation:** missing-value analysis, duplicate handling, type conversion, sanitisation and plausibility checks
 
-The `data/raw/README.md` file lists the exact filenames expected by the notebook.
+**Relational data:** candidate and foreign keys, multiplicity analysis, controlled joins and analytical-table construction
 
-## Portfolio provenance
+**Feature engineering:** Haversine distance, parcel metrics, transformations and interaction variables
 
-The notebook in this repository was reconstructed from the supplied Jupyter HTML export. Code and narrative are preserved from the coursework, while cell outputs were omitted from the `.ipynb` copy to make the repository smaller and easier to review.
+**Statistical analysis:** distributions, correlations, outliers, heteroscedasticity, multicollinearity and influence diagnostics
 
-The original rendered HTML and PDF are retained under `docs/` as evidence of the completed analysis.
+**Machine learning:** multiple linear regression, Ridge regression, group-aware cross-validation and leakage-safe preprocessing
 
-## Skills demonstrated
-
-**Data cleaning:** missing values, duplicates, types, plausibility checks, sanitisation  
-**Data engineering:** relational joins, key integrity, multiplicity analysis, 1NF analytical table construction  
-**Feature engineering:** Haversine distance, parcel metrics, log/squared/interaction terms  
-**Statistics:** distributions, correlations, outliers, heteroscedasticity, multicollinearity, influence diagnostics  
-**Machine learning:** linear regression, Ridge regression, group-aware cross-validation, leakage-safe pipelines  
-**Evaluation:** RMSE, MAE, R², residual analysis, group bootstrap, subgroup error analysis  
-**Python:** pandas, NumPy, SciPy, Matplotlib, scikit-learn, statsmodels
+**Evaluation:** RMSE, MAE, R², residual analysis, order-level bootstrap and subgroup error analysis
 
 ## Author
 
