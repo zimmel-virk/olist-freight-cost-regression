@@ -1,0 +1,18 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+.DS_Store
+.idea/
+.vscode/
+
+# Third-party raw dataset
+data/raw/*.csv
+
+# Generated data and figures
+data/processed/*
+!data/processed/.gitkeep
+figures/*
+!figures/.gitkeep

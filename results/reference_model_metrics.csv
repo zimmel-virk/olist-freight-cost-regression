@@ -1,0 +1,4 @@
+model,RMSE_BRL,MAE_BRL,R_squared
+Baseline multiple linear regression,11.492,5.166,0.562
+Feature-engineered OLS,10.601,4.755,0.627
+Tuned Ridge regression,10.629,4.74,0.625
